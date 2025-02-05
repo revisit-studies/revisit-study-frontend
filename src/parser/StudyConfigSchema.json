@@ -283,6 +283,9 @@
               },
               {
                 "$ref": "#/definitions/ComponentBlock"
+              },
+              {
+                "$ref": "#/definitions/DynamicBlock"
               }
             ]
           },
@@ -459,6 +462,34 @@
         "options",
         "prompt",
         "type"
+      ],
+      "type": "object"
+    },
+    "DynamicBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "functionPath": {
+          "description": "The path to the function that generates the components. This should be a relative path from the src/public folder.",
+          "type": "string"
+        },
+        "id": {
+          "description": "The id of the block. This is used to identify the block in the SkipConditions and is only required if you want to refer to the whole block in the condition.to property.",
+          "type": "string"
+        },
+        "order": {
+          "const": "dynamic",
+          "description": "The type of order. This can be random (pure random), latinSquare (random with some guarantees), or fixed.",
+          "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": {},
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "order",
+        "functionPath"
       ],
       "type": "object"
     },
@@ -1872,7 +1903,14 @@
           "type": "array"
         },
         "sequence": {
-          "$ref": "#/definitions/ComponentBlock",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ComponentBlock"
+            },
+            {
+              "$ref": "#/definitions/DynamicBlock"
+            }
+          ],
           "description": "The order of the components in the study. This might include some randomness."
         },
         "studyMetadata": {

@@ -1,9 +1,11 @@
-import { Suspense, useCallback } from 'react';
+import {
+  Suspense, useCallback, useMemo,
+} from 'react';
 import { ModuleNamespace } from 'vite/types/hot';
 import { ReactComponent } from '../parser/types';
 import { StimulusParams } from '../store/types';
 import { ResourceNotFound } from '../ResourceNotFound';
-import { useStoreDispatch, useStoreActions } from '../store/store';
+import { useStoreDispatch, useStoreActions, useStoreSelector } from '../store/store';
 import { useCurrentComponent, useCurrentStep } from '../routes/utils';
 import { ErrorBoundary } from './ErrorBoundary';
 
@@ -15,6 +17,7 @@ const modules = import.meta.glob(
 export function ReactComponentController({ currentConfig, provState }: { currentConfig: ReactComponent; provState?: unknown }) {
   const currentStep = useCurrentStep();
   const currentComponent = useCurrentComponent();
+  const funcParams = useStoreSelector((state) => state.funcParams);
 
   const reactPath = `../public/${currentConfig.path}`;
   const StimulusComponent = reactPath in modules ? (modules[reactPath] as ModuleNamespace).default : null;
@@ -33,13 +36,15 @@ export function ReactComponentController({ currentConfig, provState }: { current
     storeDispatch(setreactiveAnswers(answers));
   }, [currentComponent, currentStep, setreactiveAnswers, storeDispatch, updateResponseBlockValidation]);
 
+  const params = useMemo(() => (funcParams !== undefined ? funcParams : currentConfig.parameters), [currentConfig.parameters, funcParams]);
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       {StimulusComponent
         ? (
           <ErrorBoundary>
             <StimulusComponent
-              parameters={currentConfig.parameters}
+              parameters={params}
               setAnswer={setAnswer}
               provenanceState={provState}
             />

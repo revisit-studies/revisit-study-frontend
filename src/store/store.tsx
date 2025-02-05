@@ -69,6 +69,8 @@ export async function studyStoreCreator(
     modes,
     matrixAnswers: {},
     participantId,
+    funcSequence: {},
+    funcParams: undefined,
   };
 
   const storeSlice = createSlice({
@@ -80,6 +82,23 @@ export async function studyStoreCreator(
       },
       setIsRecording(state, payload: PayloadAction<boolean>) {
         state.isRecording = payload.payload;
+      },
+      setFuncParams(state, payload: PayloadAction<unknown | undefined>) {
+        state.funcParams = payload.payload;
+      },
+      pushToFuncSequence(state, payload: PayloadAction<{component: string, funcName: string, index: number, funcIndex: number}>) {
+        if (!state.funcSequence[payload.payload.funcName]) {
+          state.funcSequence[payload.payload.funcName] = [];
+        }
+        if (state.funcSequence[payload.payload.funcName].length > payload.payload.funcIndex) {
+          return;
+        }
+
+        state.funcSequence[payload.payload.funcName].push(payload.payload.component);
+        state.answers[`${payload.payload.funcName}_${payload.payload.index}_${payload.payload.component}_${payload.payload.funcIndex}`] = {
+          answer: {}, incorrectAnswers: {}, startTime: 0, endTime: -1, provenanceGraph: undefined, windowEvents: [], timedOut: false, helpButtonClickedCount: 0,
+        };
+        state.trialValidation[`${payload.payload.funcName}_${payload.payload.index}_${payload.payload.component}_${payload.payload.funcIndex}`] = { aboveStimulus: { valid: false, values: {} }, belowStimulus: { valid: false, values: {} }, sidebar: { valid: false, values: {} } };
       },
       toggleStudyBrowser: (state) => {
         state.showStudyBrowser = !state.showStudyBrowser;
@@ -290,6 +309,8 @@ export function useAreResponsesValid(id: string) {
     // instead of "if (!valid) return false" and then the stuff below
     return Object.values(valid).every((x) => x);
   });
+
+  return true;
 }
 
 const flatSequenceSelector = createSelector(

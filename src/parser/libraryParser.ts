@@ -1,5 +1,5 @@
 import Ajv from 'ajv';
-import { merge } from 'lodash';
+import { merge } from 'lodash.merge';
 import librarySchema from './LibraryConfigSchema.json';
 import {
   IndividualComponent, LibraryConfig, ParsedConfig, ParserErrorWarning, StudyConfig,
@@ -27,7 +27,7 @@ function namespaceLibrarySequenceComponents(sequence: StudyConfig['sequence'], l
 export function expandLibrarySequences(sequence: StudyConfig['sequence'], importedLibrariesData: Record<string, LibraryConfig>, errors: ParserErrorWarning[] = []): StudyConfig['sequence'] {
   return {
     ...sequence,
-    components: sequence.components.map((component) => {
+    components: (sequence.components || []).map((component) => {
       if (typeof component === 'object') {
         return expandLibrarySequences(component, importedLibrariesData);
       }
